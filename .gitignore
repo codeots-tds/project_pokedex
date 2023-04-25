@@ -1,0 +1,4 @@
+*.json
+/datafiles
+app/__pycache__/
+app/schemas/__pycache__/
