@@ -6,7 +6,7 @@ from email.mime import application
 import uvicorn
 from app.transform_data import process_pokedex
 from typing import List
-from app.schema import schema
+from app.schemas import schema
 
 app=FastAPI()
 graphql_app = GraphQLRouter(schema)
