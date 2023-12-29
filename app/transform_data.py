@@ -74,7 +74,6 @@ def process_pie_chart():
 def process_pokedex() -> Generation:
     poke_df=poke_df_obj.poke_df
     pokedex_data=[]
-    print(poke_df.columns)
     for row in poke_df.iterrows():
         row_data=row[1]
         gen_name=row_data['gen_name']
