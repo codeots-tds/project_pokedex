@@ -1,16 +1,39 @@
 import strawberry
-from fastapi import FastAPI
-from strawberry.fastapi import GraphQLRouter
-from fastapi.middleware.cors import CORSMiddleware
-from email.mime import application
+from flask import Flask, request
+from strawberry.flask.views import GraphQLView
 import uvicorn
 from app.transform_data import process_pokedex
-from typing import List
 from app.schema import schema
+from typing import List
+from flask import Flask
+from flask_cors import CORS
 
-app=FastAPI()
-graphql_app = GraphQLRouter(schema)
-app.include_router(graphql_app, prefix='/graphql')
+# Initialize Flask app
+app = Flask(__name__)
+CORS(app)
+
+# Create a route for your GraphQL endpoint
+app.add_url_rule(
+    "/graphql", view_func=GraphQLView.as_view("graphql_view", schema=schema)
+)
+
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-    pass
+    # Run the Flask app instead of using uvicorn
+    app.run(host="0.0.0.0", port=8000)
+
+# import strawberry
+# from fastapi import FastAPI
+# from strawberry.fastapi import GraphQLRouter
+# from fastapi.middleware.cors import CORSMiddleware
+# from email.mime import application
+# import uvicorn
+# from app.transform_data import process_pokedex
+# from typing import List
+# from app.schema import schema
+
+# app=FastAPI()
+# graphql_app = GraphQLRouter(schema)
+# app.include_router(graphql_app, prefix='/graphql')
+# if __name__ == "__main__":
+#     uvicorn.run(app, host="0.0.0.0", port=8000)
+#     pass

@@ -12,6 +12,8 @@ openpyxl = "*"
 cors = "*"
 execute = "*"
 fastapi = "*"
+flask = "*"
+flask-cors = "*"
 
 [dev-packages]
 
