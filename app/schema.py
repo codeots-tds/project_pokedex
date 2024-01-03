@@ -1,8 +1,9 @@
 import strawberry
 from app.transform_data import process_pokedex
-from app.schemas.poke_schema import Generation
+from app.schemas.poke_schema import Generation, Pokemon
 from app.schemas.pie_chart_schema import GenPieChart, Num_Pokemon
 from app.transform_data import generation_groupby
+from typing import List, Optional
 
 def get_pie_chart_data()-> GenPieChart:
     pie_chart_data=[]
@@ -25,6 +26,21 @@ def get_pie_chart_data()-> GenPieChart:
         )
 )
 
+@strawberry.input
+class PokemonStatsFilter:
+    min_hp: Optional[int] = None
+    max_hp: Optional[int] = None
+    min_atk: Optional[int] = None
+    max_atk: Optional[int] = None
+    min_def: Optional[int] = None
+    max_def: Optional[int] = None
+    min_sp_atk: Optional[int] = None
+    max_sp_atk: Optional[int] = None
+    min_sp_def: Optional[int] = None
+    max_sp_def: Optional[int] = None
+    min_speed: Optional[int] = None
+    max_speed: Optional[int] = None
+
 
 @strawberry.type
 class Query:
@@ -32,15 +48,8 @@ class Query:
     GenBreakDown : GenPieChart = strawberry.field(resolver=get_pie_chart_data)
 
     def __init__(self, **kwargs):
-        self.all_pokemon = process_pokedex()
-        self.stat_dict_refs = {
-            'hp' : 'hp',
-            'atk': 'attack',
-            'def': 'defense',
-            'spatk': 'sp_attack',
-            'spdef': 'sp_defense',
-            'speed': 'speed',
-        }
+        pass
+ 
 
     def choose_pokemon(self, selected_pokemon):
         selected_pokemon = selected_pokemon.lower()
@@ -63,39 +72,45 @@ class Query:
         min_val = stats[0]
         return max_val, min_val
     
-    def check_greater_less_than(val):
-        pass
-
-    def build_query(self, stat_dict):
-        #maybe stat_dict can be a dict of dicts with min/max values
-        len_stat_dict = len(stat_dict)
-        poke_entry_temp_list = []
-        if stat_dict != 'None':
-            try:
-                for key, stats in stat_dict.items():
-                    if len(stats) == 2:
-                        max_val, min_val = Query.check_min_max(stats)
-                        for pokemon in self.all_pokemon.pokemon:
-                            poke_data_value = getattr(pokemon.stats_abilities[0], self.stat_dict_refs[key])
-                            if poke_data_value >= min_val and poke_data_value <= max_val:
-                                if pokemon not in poke_entry_temp_list:
-                                    poke_entry_temp_list.append(pokemon)
-                    # elif len(stats) == 1:
-            except ValueError as e:
-                print("unfilterable")
-
+    @strawberry.field
+    def filter_pokemon(self, filters: Optional[PokemonStatsFilter] = None) -> List[Pokemon]:
+        try:
+            all_pokemon = process_pokedex()
+            filtered_pokemon = []
+            for idx, pokemon in enumerate(all_pokemon.pokemon):
+                if filters:
+                    if filters.min_hp and pokemon.stats_abilities[0].hp < filters.min_hp:
+                        continue
+                    if filters.max_hp and pokemon.stats_abilities[0].hp > filters.max_hp:
+                        continue
+                    if filters.min_atk and pokemon.stats_abilities[0].attack < filters.min_atk:
+                        continue
+                    if filters.max_atk and pokemon.stats_abilities[0].attack > filters.max_atk:
+                        continue
+                    if filters.min_def and pokemon.stats_abilities[0].defense < filters.min_def:
+                        continue
+                    if filters.max_def and pokemon.stats_abilities[0].defense > filters.max_def:
+                        continue
+                    if filters.min_sp_atk and pokemon.stats_abilities[0].sp_attack < filters.min_sp_atk:
+                        continue
+                    if filters.max_sp_atk and pokemon.stats_abilities[0].sp_attack > filters.max_sp_atk:
+                        continue
+                    if filters.min_sp_def and pokemon.stats_abilities[0].sp_defense < filters.min_sp_def:
+                        continue
+                    if filters.max_sp_def and pokemon.stats_abilities[0].sp_defense > filters.max_sp_def:
+                        continue
+                    if filters.min_speed and pokemon.stats_abilities[0].speed < filters.min_speed:
+                        continue
+                    if filters.max_speed and pokemon.stats_abilities[0].speed > filters.max_speed:
+                        continue
+                filtered_pokemon.append(pokemon)
+            return filtered_pokemon
+        except Exception as e:
+            print(f"Error in filter_pokemon: {e}")
+            return []
 
 schema = strawberry.Schema(query=Query)
 
 if __name__ == '__main__':
     filter_pokemon = Query()
-    # filter_pokemon.choose_pokemon(selected_pokemon = 'charizard')
-    stat_test_dict = {
-        'hp': [50, 90],
-        'atk': [60],
-        'def': [60],
-        'spatk': [50, 80],
-        'spdef': [20, 80]
-    }
-    filter_pokemon.build_query(stat_test_dict)
     pass
